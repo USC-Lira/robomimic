@@ -57,6 +57,8 @@ import h5py
 import imageio
 import numpy as np
 from copy import deepcopy
+import sys
+import cv2
 
 import torch
 
@@ -67,9 +69,14 @@ import robomimic.utils.tensor_utils as TensorUtils
 import robomimic.utils.obs_utils as ObsUtils
 from robomimic.envs.env_base import EnvBase
 from robomimic.algo import RolloutPolicy
+# import robomimic_vd.robomimic.utils.gaze_data_utils as GazeUtils
+
+sys.path.append("/home/dhanush/shreya_gaze_project/robosuite_vd") # SHREYA hack
+from robosuite.utils.camera_utils import project_points_from_world_to_camera, transform_from_pixels_to_world
 
 
-def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5, return_obs=False, camera_names=None):
+
+def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5, return_obs=False, camera_names=None, fixed_goal_right = False, fixed_goal_left = False): # SHREYA ADDED FIXED GOAL
     """
     Helper function to carry out rollouts. Supports on-screen rendering, off-screen rendering to a video, 
     and returns the rollout trajectory.
@@ -96,6 +103,8 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
     assert not (render and (video_writer is not None))
 
     policy.start_episode()
+    # import ipdb
+    # ipdb.set_trace()
     obs = env.reset()
     state_dict = env.get_state()
 
@@ -106,30 +115,100 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
     video_count = 0  # video frame counter
     total_reward = 0.
     traj = dict(actions=[], rewards=[], dones=[], states=[], initial_state_dict=state_dict)
+    subgoal_position = None
+    # SHREYA setting camera height, width and transformation matrix
+    camera_height = 512
+    camera_width = 512
+    agentview_camera_transformation_matrix = env.get_camera_transform_matrix("agentview", camera_height, camera_width)
+    handview_camera_transformation_matrix = env.get_camera_transform_matrix("robot0_eye_in_hand", camera_height, camera_width)
+        
+
+    # import ipdb
+    # ipdb.set_trace()
     if return_obs:
         # store observations too
         traj.update(dict(obs=[], next_obs=[]))
+
+    # gaze_util_obj = GazeUtils.gaze_data_util(3840, 2160)  # TODO: fix the hardcoding
+
     try:
         for step_i in range(horizon):
 
             # get action from policy
-            act = policy(ob=obs)
+            act, subgoal_dic, idx = policy(ob=obs, fixed_goal_right = fixed_goal_right, fixed_goal_left=fixed_goal_left, transform = agentview_camera_transformation_matrix) # SHREYA ADDED FIXED GOAL
+            # import ipdb 
+            # ipdb.set_trace()
 
+            # ----- This part is for fixed gaze -----
+
+                
             # play action
             next_obs, r, done, _ = env.step(act)
+            # import ipdb
+            # ipdb.set_trace()
 
             # compute reward
             total_reward += r
             success = env.is_success()["task"]
+            
+            # import ipdb 
+            # ipdb.set_trace()
+
+
+            # transform_from_pixels_to_world(np.array([[148, 261]]), np.ones((1, 512, 512, 1)), agentview_camera_transformation_matrix.T)
+            
+            if subgoal_dic is not None:
+                # (148, 261) for left block
+                subgoal_position = subgoal_dic['robot0_eef_pos'][0]
+                agentview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
+                                                                            agentview_camera_transformation_matrix,
+                                                                            camera_height,
+                                                                            camera_width)
+                handview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
+                                                                             handview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)
+                fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
+                                                                             agentview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)
+                # agentview_subgoal_pixels = agentview_subgoal_pixels[0]
+                # subgoal_pixel_x, subgoal_pixel_y = agentview_subgoal_pixels[0], agentview_subgoal_pixels[0, 1]
+                # subgoal_pixel_coordinates = {'pixel_x': [sg[0] for sg in agentview_subgoal_pixels],
+                #                                 'pixel_y': [sg[1] for sg in agentview_subgoal_pixels]}  # DICT for easy parsing later on
+
 
             # visualization
+            # import ipdb
+            # ipdb.set_trace()
+            # curr_x, curr_y = subgoal_dic['robot0_eef_pos'][0][idx]
             if render:
                 env.render(mode="human", camera_name=camera_names[0])
             if video_writer is not None:
                 if video_count % video_skip == 0:
                     video_img = []
                     for cam_name in camera_names:
-                        video_img.append(env.render(mode="rgb_array", height=512, width=512, camera_name=cam_name))
+                        frame = env.render(mode="rgb_array", height=512, width=512, camera_name=cam_name)
+                        # edited_frame = cv2.drawMarker(np.uint8(frame.copy()),
+                        #            (int(subgoal_pixel_coordinates['pixel_x']),
+                        #             int(subgoal_pixel_coordinates['pixel_x'])), color=(0, 0, 255),
+                        #            markerType=cv2.MARKER_CROSS, markerSize=10,
+                        #            thickness=2)
+                        if cam_name == 'agentview':
+                            for point in agentview_subgoal_pixels:
+                                # print("HI")
+                                x, y = point
+                                # Draw a red circle with a radius of 5 pixels
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                        elif cam_name == 'robot0_eye_in_hand':
+                            for point in handview_subgoal_pixels:
+                                x, y = point
+                                # Draw a red circle with a radius of 5 pixels
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                        frame = cv2.circle(np.uint8(frame.copy()), (fixed[0], fixed[1]), 5, (0, 255, 0), -1)    
+                        # frame = cv2.circle(np.uint8(frame.copy()), (148, 261), 5, (0, 255, 0), 0)                        
+                        video_img.append(frame)
+
                     video_img = np.concatenate(video_img, axis=1) # concatenate horizontally
                     video_writer.append_data(video_img)
                 video_count += 1
@@ -228,6 +307,10 @@ def run_trained_agent(args):
         data_grp = data_writer.create_group("data")
         total_samples = 0
 
+    # import ipdb
+    # ipdb.set_trace()
+
+
     rollout_stats = []
     for i in range(rollout_num_episodes):
         stats, traj = rollout(
@@ -239,7 +322,10 @@ def run_trained_agent(args):
             video_skip=args.video_skip, 
             return_obs=(write_dataset and args.dataset_obs),
             camera_names=args.camera_names,
+            fixed_goal_right = args.fixed_goal_right,
+            fixed_goal_left = args.fixed_goal_left
         )
+        # print(dshfkdh)
         rollout_stats.append(stats)
 
         if write_dataset:
@@ -367,6 +453,18 @@ if __name__ == "__main__":
         type=int,
         default=None,
         help="(optional) set seed for rollouts",
+    )
+
+    parser.add_argument(
+        "--fixed_goal_right", 
+        action='store_true',
+        help="evaluate on fixed right goal (gaze fixed at one point)"
+    )
+
+    parser.add_argument(
+        "--fixed_goal_left", 
+        action='store_true',
+        help="evaluate on fixed left goal (gaze fixed at one point)"
     )
 
     args = parser.parse_args()
