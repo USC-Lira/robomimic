@@ -25,6 +25,7 @@ import psutil
 import sys
 import socket
 import traceback
+import wandb
 
 from collections import OrderedDict
 
@@ -308,6 +309,9 @@ def train(config, device):
             for env_name in video_paths:
                 os.remove(video_paths[env_name])
 
+        if video_paths is not None and config.experiment.logging.log_wandb:
+            wandb.log({'rollout video': wandb.Video(video_paths[env_name], fps = 4, format = 'gif')})
+
         # Save model checkpoints based on conditions (success rate, validation loss, etc)
         if should_save_ckpt:
             TrainUtils.save_model(
@@ -367,7 +371,7 @@ def main(args):
         config.experiment.rollout.horizon = 10
 
         # send output to a temporary directory
-        config.train.output_dir = "/tmp/tmp_trained_models"
+        config.train.output_dir = "/tmp/temp_trained_models"
 
     # lock config to prevent further modifications and ensure missing keys raise errors
     config.lock()
