@@ -9,6 +9,7 @@ import textwrap
 import numpy as np
 from collections import OrderedDict
 from copy import deepcopy
+import sys
 
 import torch
 
@@ -16,6 +17,9 @@ import robomimic.utils.tensor_utils as TensorUtils
 import robomimic.utils.obs_utils as ObsUtils
 from robomimic.config.config import Config
 from robomimic.algo import register_algo_factory_func, algo_name_to_factory_func, HierarchicalAlgo, GL_VAE
+
+sys.path.append("/home/dhanush/shreya_gaze_project/robosuite_vd") # SHREYA hack
+from robosuite.utils.camera_utils import project_points_from_world_to_camera
 
 
 @register_algo_factory_func("hbc")
@@ -169,6 +173,7 @@ class HBC(HierarchicalAlgo):
 
         # we move to device first before float conversion because image observation modalities will be uint8 -
         # this minimizes the amount of data transferred to GPU
+        # print("HI im here")
         return TensorUtils.to_float(TensorUtils.to_device(input_batch, self.device))
 
     def train_on_batch(self, batch, epoch, validate=False):
@@ -284,22 +289,27 @@ class HBC(HierarchicalAlgo):
         """
         Return the current subgoal (at rollout time) with shape (batch, ...)
         """
-        return { k : self._current_subgoal[k].clone() for k in self._current_subgoal }
+        return { k : self._current_subgoal[k].clone() for k in self._current_subgoal } # SHREYA MAY HAVE TO change here
 
     @current_subgoal.setter
     def current_subgoal(self, sg):
         """
         Sets the current subgoal being used by the actor.
         """
+        # added by SHREYA
+        if isinstance(sg, tuple):
+            sg = sg[0]
+        assert isinstance(sg, dict)
+
         for k, v in sg.items():
             if not self.algo_config.latent_subgoal.enabled:
                 # subgoal should only match subgoal shapes if not using latent subgoals
                 assert list(v.shape[1:]) == list(self.planner.subgoal_shapes[k])
             # subgoal shapes should always match actor goal shapes
             assert list(v.shape[1:]) == list(self.actor_goal_shapes[k])
-        self._current_subgoal = { k : sg[k].clone() for k in sg }
+        self._current_subgoal = { k : sg[k].clone() for k in sg }  # SHREYA MAY HAVE TO change here
 
-    def get_action(self, obs_dict, goal_dict=None):
+    def get_action(self, obs_dict, goal_dict=None, fixed_goal_right=False, fixed_goal_left=False, transform = None): # SHREYA ADDED FIXED GOAL
         """
         Get policy action outputs.
 
@@ -310,13 +320,37 @@ class HBC(HierarchicalAlgo):
         Returns:
             action (torch.Tensor): action tensor
         """
+        subgoal_pos_get = False
         if self._current_subgoal is None or self._subgoal_step_count % self._subgoal_update_interval == 0:
             # update current subgoal
-            self.current_subgoal = self.planner.get_subgoal_predictions(obs_dict=obs_dict, goal_dict=goal_dict)
+            # import ipdb
+            # ipdb.set_trace()
+            self.current_subgoal, subgoal_dic, idx = self.planner.get_subgoal_predictions(obs_dict=obs_dict, goal_dict=goal_dict, transform = transform)
+            # print(self.current_subgoal)
+            # print(self.fixed_goal)
+            subgoal_pos_get = True
 
-        action = self.actor.get_action(obs_dict=obs_dict, goal_dict=self.current_subgoal)
+        if fixed_goal_left: # SHREYA added this line
+            # print("L")
+            goal_fixed = torch.load('goal_left_new.pth')
+            # import ipdb
+            # ipdb.set_trace()
+            action = self.actor.get_action(obs_dict=obs_dict, goal_dict=goal_fixed)
+        elif fixed_goal_right:
+            # print("R")
+            goal_fixed = torch.load('goal_right_new.pth')
+            # import ipdb
+            # ipdb.set_trace()
+            action = self.actor.get_action(obs_dict=obs_dict, goal_dict=goal_fixed)
+        else:
+            # torch.save(self.current_subgoal, 'goal_left_new.pth')  # Change as required
+            action = self.actor.get_action(obs_dict=obs_dict, goal_dict=self.current_subgoal)
         self._subgoal_step_count += 1
-        return action
+        # import ipdb
+        # ipdb.set_trace()
+        if subgoal_pos_get:
+            return action, subgoal_dic, idx
+        return action, None, None
 
     def reset(self):
         """

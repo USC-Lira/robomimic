@@ -13,6 +13,7 @@ import robomimic.models.vae_nets as VAENets
 import robomimic.utils.tensor_utils as TensorUtils
 import robomimic.utils.torch_utils as TorchUtils
 import robomimic.utils.obs_utils as ObsUtils
+from robosuite.utils.camera_utils import project_points_from_world_to_camera
 
 from robomimic.algo import register_algo_factory_func, PlannerAlgo, ValueAlgo
 
@@ -445,7 +446,7 @@ class GL_VAE(GL):
             loss_log["Encoder_Variance"] = info["encoder_variance"].mean().item()
         return loss_log
 
-    def get_subgoal_predictions(self, obs_dict, goal_dict=None):
+    def get_subgoal_predictions(self, obs_dict, goal_dict=None, transform = None):
         """
         Takes a batch of observations and predicts a batch of subgoals.
 
@@ -456,7 +457,8 @@ class GL_VAE(GL):
         Returns:
             subgoal prediction (dict): name -> Tensor [batch_size, ...]
         """
-
+        # import ipdb
+        # ipdb.set_trace()
         if self.global_config.algo.latent_subgoal.enabled:
             # latent subgoals from sampling prior
             latent_subgoals = self.nets["goal_network"].sample_prior(
@@ -467,8 +469,31 @@ class GL_VAE(GL):
             return OrderedDict(latent_subgoal=latent_subgoals)
 
         # sample a single goal from the VAE
-        goals = self.sample_subgoals(obs_dict=obs_dict, goal_dict=goal_dict, num_samples=1)
-        return { k : goals[k][:, 0, ...] for k in goals }
+        # import ipdb
+        # ipdb.set_trace()
+        goals = self.sample_subgoals(obs_dict=obs_dict, goal_dict=goal_dict, num_samples=100) # SHREYA change num_samples here to get different number of subgoal predictions
+
+        # SHREYA ------- convert goals to contain only the goal that is closest to the gaze -------
+        camera_height = 512
+        camera_width = 512
+        # agentview_camera_transformation_matrix = env.get_camera_transform_matrix("agentview", camera_height, camera_width)
+        # handview_camera_transformation_matrix = env.get_camera_transform_matrix("robot0_eye_in_hand", camera_height, camera_width)
+
+        idx = 0
+
+        if transform is not None:
+                # (148, 261) for left block
+            agentview_subgoal_pixels = project_points_from_world_to_camera(goals['robot0_eef_pos'][0].cpu().detach().numpy(),
+                                                                        transform,
+                                                                        camera_height,
+                                                                        camera_width)
+            
+            distances = np.linalg.norm(agentview_subgoal_pixels - np.array([148, 261]), axis=1)
+            idx = np.argmin(distances)
+
+        # import ipdb
+        # ipdb.set_trace()
+        return { k : goals[k][:, idx, ...] for k in goals }, goals, idx
 
     def sample_subgoals(self, obs_dict, goal_dict=None, num_samples=1):
         """
