@@ -222,8 +222,10 @@ def run_rollout(
     try:
         for step_i in range(horizon):
 
+            # import ipdb
+            # ipdb.set_trace()
             # get action from policy
-            ac = policy(ob=ob_dict, goal=goal_dict)
+            ac, _, _ = policy(ob=ob_dict, goal=goal_dict) # SHREYA this function returns (action, all the subgoal predictions, index of subgoal closest to the left block (by euclidean dist))
 
             # play action
             ob_dict, r, done, _ = env.step(ac)
