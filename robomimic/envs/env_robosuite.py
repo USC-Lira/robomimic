@@ -78,6 +78,7 @@ class EnvRobosuite(EB.EnvBase):
             use_object_obs=True,
             use_camera_obs=use_image_obs,
             camera_depths=use_depth_obs,
+            # initialization_noise = {'magnitude': 0.1, 'type': "gaussian"} # NOTE (SHREYA): TRIAL FOR RANDOMIZATION. REMOVE IF DOES NOT WORK
         )
         kwargs.update(update_kwargs)
 
