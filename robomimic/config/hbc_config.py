@@ -37,6 +37,7 @@ class HBCConfig(BaseConfig):
 
         # ================== Latent Subgoal Config ==================
         self.algo.latent_subgoal.enabled = False    # if True, use VAE latent space as subgoals for actor, instead of reconstructions
+        # self.algo.fixed_subgoal.enabled = False    # SHREYA added this line # if True, use VAE latent space as subgoals for actor, instead of reconstructions
 
         # prior correction trick for actor and value training: instead of using encoder for 
         # transforming subgoals to latent subgoals, generate prior samples and choose
