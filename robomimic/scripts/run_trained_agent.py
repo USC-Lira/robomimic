@@ -133,6 +133,8 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
 
     try:
         for step_i in range(horizon):
+            # import ipdb 
+            # ipdb.set_trace()
 
             # get action from policy
             act, subgoal_dic, idx = policy(ob=obs, fixed_goal_right = fixed_goal_right, fixed_goal_left=fixed_goal_left, transform = agentview_camera_transformation_matrix) # SHREYA ADDED FIXED GOAL
@@ -163,7 +165,7 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
                 agentview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
                                                                             agentview_camera_transformation_matrix,
                                                                             camera_height,
-                                                                            camera_width)
+                                                                            camera_width)[:, ::-1] 
                 handview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
                                                                              handview_camera_transformation_matrix,
                                                                              camera_height,
@@ -171,11 +173,13 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
                 fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
                                                                              agentview_camera_transformation_matrix,
                                                                              camera_height,
-                                                                             camera_width)
-                # agentview_subgoal_pixels = agentview_subgoal_pixels[0]
-                # subgoal_pixel_x, subgoal_pixel_y = agentview_subgoal_pixels[0], agentview_subgoal_pixels[0, 1]
-                # subgoal_pixel_coordinates = {'pixel_x': [sg[0] for sg in agentview_subgoal_pixels],
-                #                                 'pixel_y': [sg[1] for sg in agentview_subgoal_pixels]}  # DICT for easy parsing later on
+                                                                             camera_width)[::-1]
+                eef_pos = project_points_from_world_to_camera(next_obs['robot0_eef_pos'],
+                                                                             agentview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                block = (148, 261) # left block coords
+                # block = (350, 261) # right block coords
 
 
             # visualization
@@ -189,24 +193,25 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
                     video_img = []
                     for cam_name in camera_names:
                         frame = env.render(mode="rgb_array", height=512, width=512, camera_name=cam_name)
-                        # edited_frame = cv2.drawMarker(np.uint8(frame.copy()),
-                        #            (int(subgoal_pixel_coordinates['pixel_x']),
-                        #             int(subgoal_pixel_coordinates['pixel_x'])), color=(0, 0, 255),
-                        #            markerType=cv2.MARKER_CROSS, markerSize=10,
-                        #            thickness=2)
+                        frame = cv2.drawMarker(np.uint8(frame.copy()),
+                                   (block[0],
+                                    block[1]), color=(255, 0, 255),
+                                   markerType=cv2.MARKER_CROSS, markerSize=10,
+                                   thickness=2)
                         if cam_name == 'agentview':
                             for point in agentview_subgoal_pixels:
                                 # print("HI")
                                 x, y = point
                                 # Draw a red circle with a radius of 5 pixels
-                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 2, (0, 0, 255), -1)
                         elif cam_name == 'robot0_eye_in_hand':
                             for point in handview_subgoal_pixels:
                                 x, y = point
                                 # Draw a red circle with a radius of 5 pixels
                                 frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
-                        frame = cv2.circle(np.uint8(frame.copy()), (fixed[0], fixed[1]), 5, (0, 255, 0), -1)    
-                        # frame = cv2.circle(np.uint8(frame.copy()), (148, 261), 5, (0, 255, 0), 0)                        
+                        frame = cv2.circle(np.uint8(frame.copy()), (fixed[0], fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
+                        frame = cv2.circle(np.uint8(frame.copy()), (eef_pos[0], eef_pos[1]), 2, (255, 0, 0), -1)  
+                        frame = cv2.putText(np.uint8(frame.copy()), f"Timestep {step_i}", (20, 450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)                      
                         video_img.append(frame)
 
                     video_img = np.concatenate(video_img, axis=1) # concatenate horizontally
