@@ -218,7 +218,7 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
                     video_writer.append_data(video_img)
                 video_count += 1
 
-            # collect transition
+            # collect transition 
             traj["actions"].append(act)
             traj["rewards"].append(r)
             traj["dones"].append(done)
