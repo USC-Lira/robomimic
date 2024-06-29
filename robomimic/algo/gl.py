@@ -471,14 +471,11 @@ class GL_VAE(GL):
         # sample a single goal from the VAE
         # import ipdb
         # ipdb.set_trace()
-        goals = self.sample_subgoals(obs_dict=obs_dict, goal_dict=goal_dict, num_samples=100) # SHREYA change num_samples here to get different number of subgoal predictions
+        goals = self.sample_subgoals(obs_dict=obs_dict, goal_dict=goal_dict, num_samples=100) # NOTE: SHREYA change num_samples here to get different number of subgoal predictions. SUBGOAL NUMBER LINE
 
         # SHREYA ------- convert goals to contain only the goal that is closest to the gaze -------
         camera_height = 512
         camera_width = 512
-        # agentview_camera_transformation_matrix = env.get_camera_transform_matrix("agentview", camera_height, camera_width)
-        # handview_camera_transformation_matrix = env.get_camera_transform_matrix("robot0_eye_in_hand", camera_height, camera_width)
-
         idx = 0
 
         if transform is not None:
@@ -486,9 +483,9 @@ class GL_VAE(GL):
             agentview_subgoal_pixels = project_points_from_world_to_camera(goals['robot0_eef_pos'][0].cpu().detach().numpy(),
                                                                         transform,
                                                                         camera_height,
-                                                                        camera_width)
+                                                                        camera_width)[:,::-1]
             
-            distances = np.linalg.norm(agentview_subgoal_pixels - np.array([148, 261]), axis=1)
+            distances = np.linalg.norm(agentview_subgoal_pixels - np.array([148, 261]), axis=1) # 148 for left block, 350 for right block
             idx = np.argmin(distances)
 
         # import ipdb
