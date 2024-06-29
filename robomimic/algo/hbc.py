@@ -330,21 +330,21 @@ class HBC(HierarchicalAlgo):
             # print(self.fixed_goal)
             subgoal_pos_get = True
 
-        if fixed_goal_left: # SHREYA added this line
-            # print("L")
-            goal_fixed = torch.load('goal_left_new.pth')
-            # import ipdb
-            # ipdb.set_trace()
-            action = self.actor.get_action(obs_dict=obs_dict, goal_dict=goal_fixed)
-        elif fixed_goal_right:
-            # print("R")
-            goal_fixed = torch.load('goal_right_new.pth')
-            # import ipdb
-            # ipdb.set_trace()
-            action = self.actor.get_action(obs_dict=obs_dict, goal_dict=goal_fixed)
-        else:
+        # if fixed_goal_left: # SHREYA added this line
+        #     # print("L")
+        #     goal_fixed = torch.load('goal_left_new.pth')
+        #     # import ipdb
+        #     # ipdb.set_trace()
+        #     action = self.actor.get_action(obs_dict=obs_dict, goal_dict=goal_fixed)
+        # elif fixed_goal_right:
+        #     # print("R")
+        #     goal_fixed = torch.load('goal_right_new.pth')
+        #     # import ipdb
+        #     # ipdb.set_trace()
+        #     action = self.actor.get_action(obs_dict=obs_dict, goal_dict=goal_fixed)
+        # else:
             # torch.save(self.current_subgoal, 'goal_left_new.pth')  # Change as required
-            action = self.actor.get_action(obs_dict=obs_dict, goal_dict=self.current_subgoal)
+        action = self.actor.get_action(obs_dict=obs_dict, goal_dict=self.current_subgoal)
         self._subgoal_step_count += 1
         # import ipdb
         # ipdb.set_trace()
