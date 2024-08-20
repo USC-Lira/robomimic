@@ -103,8 +103,6 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
     assert not (render and (video_writer is not None))
 
     policy.start_episode()
-    # import ipdb
-    # ipdb.set_trace()
     obs = env.reset()
     state_dict = env.get_state()
 
@@ -119,8 +117,11 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
     # SHREYA setting camera height, width and transformation matrix
     camera_height = 512
     camera_width = 512
+    # import ipdb
+    # ipdb.set_trace()
     agentview_camera_transformation_matrix = env.get_camera_transform_matrix("agentview", camera_height, camera_width)
     handview_camera_transformation_matrix = env.get_camera_transform_matrix("robot0_eye_in_hand", camera_height, camera_width)
+    frontview_camera_transformation_matrix = env.get_camera_transform_matrix("frontview", camera_height, camera_width)
         
 
     # import ipdb
@@ -133,32 +134,17 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
 
     try:
         for step_i in range(horizon):
-            # import ipdb 
-            # ipdb.set_trace()
 
             # get action from policy
-            act, subgoal_dic, idx = policy(ob=obs, fixed_goal_right = fixed_goal_right, fixed_goal_left=fixed_goal_left, transform = agentview_camera_transformation_matrix) # SHREYA ADDED FIXED GOAL
-            # import ipdb 
-            # ipdb.set_trace()
-
-            # ----- This part is for fixed gaze -----
-
+            act, subgoal_dic, idx = policy(ob=obs, fixed_goal_right = fixed_goal_right, fixed_goal_left=fixed_goal_left, transform = agentview_camera_transformation_matrix, step_no = step_i) # SHREYA ADDED FIXED GOAL
                 
             # play action
             next_obs, r, done, _ = env.step(act)
-            # import ipdb
-            # ipdb.set_trace()
 
             # compute reward
             total_reward += r
             success = env.is_success()["task"]
-            
-            # import ipdb 
-            # ipdb.set_trace()
 
-
-            # transform_from_pixels_to_world(np.array([[148, 261]]), np.ones((1, 512, 512, 1)), agentview_camera_transformation_matrix.T)
-            
             if subgoal_dic is not None:
                 # (148, 261) for left block
                 subgoal_position = subgoal_dic['robot0_eef_pos'][0]
@@ -169,23 +155,108 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
                 handview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
                                                                              handview_camera_transformation_matrix,
                                                                              camera_height,
-                                                                             camera_width)
+                                                                             camera_width)[:, ::-1] 
+                frontview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
+                                                                             frontview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[:, ::-1] 
                 fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
                                                                              agentview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                hand_fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
+                                                                             handview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                front_fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
+                                                                             frontview_camera_transformation_matrix,
                                                                              camera_height,
                                                                              camera_width)[::-1]
                 eef_pos = project_points_from_world_to_camera(next_obs['robot0_eef_pos'],
                                                                              agentview_camera_transformation_matrix,
                                                                              camera_height,
                                                                              camera_width)[::-1]
-                block = (148, 261) # left block coords
+                hand_eef_pos = project_points_from_world_to_camera(next_obs['robot0_eef_pos'],
+                                                                             handview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                front_eef_pos = project_points_from_world_to_camera(next_obs['robot0_eef_pos'],
+                                                                             frontview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+
+                # sg = subgoal_dic['robot0_eef_pos'][0][idx]
+                # print(f'time {step_i} goal {sg}')
+
+
+                # # L shaped
+
+                # if step_i == 0:
+                #     sg = np.array([-0.0873, -0.0373,  1.0040])
+                # elif step_i == 30:
+                #     sg = np.array([-0.0660, -0.0850,  1.0008])
+                # elif step_i == 60:
+                #     sg = np.array([-0.0230, -0.1222,  1.0025])
+                # elif step_i == 90:
+                #     sg = np.array([-0.0026, -0.1203,  0.9948])
+                # elif step_i == 120:
+                #     sg = np.array([-0.0079, -0.1291,  0.9187])
+                # elif step_i == 150:
+                #     sg = np.array([-0.0044, -0.1299,  0.8358])
+                # elif step_i == 180:
+                #     sg = np.array([-0.0185, -0.1225,  0.8471])
+                # elif step_i == 210:
+                #     sg = np.array([-0.0282, -0.1120,  0.8508])
+
+                # V shaped
+
+                if step_i == 0:
+                    sg = np.array([-0.0886, -0.0148,  0.9927])
+                elif step_i == 30:
+                    sg = np.array([-0.0544, -0.0502,  1.0019])
+                elif step_i == 60:
+                    sg = np.array([-0.0224, -0.1254,  1.0010])
+                elif step_i == 90:
+                    sg = np.array([-0.0078, -0.1244,  0.9347])
+                elif step_i == 120:
+                    sg = np.array([-0.0069, -0.1277,  0.8471])
+                elif step_i == 150:
+                    sg = np.array([-0.0123, -0.1321,  0.8344])
+                elif step_i == 180:
+                    sg = np.array([-0.0176, -0.1302,  0.8573])
+                elif step_i == 210:
+                    sg = np.array([-0.0195, -0.1208,  0.8553])
+
+                block_3d = np.array([ 0, -0.10975602,  0.83172107]) if step_i > 210 else sg
+
+
+                # block = (148, 261) # left block coords
                 # block = (350, 261) # right block coords
+                # [0,0,0.775] is the center of the table, soimp = [0.9, 0.95, 0.001]
+                # block_3d = np.array([0, 0.13 , 0.83162073]) # right block (self.sim.data.body_xpos[self.cube2_body_id])
+
+                # For fixing left block as target (no moving gaze)
+                block_3d = np.array([ 0, -0.10975602,  0.83172107]) # left block
+
+                block = project_points_from_world_to_camera(block_3d, # left block 3D coords
+                                                            agentview_camera_transformation_matrix,
+                                                            camera_height,
+                                                            camera_width)[::-1]
+
+                hand_block = project_points_from_world_to_camera(block_3d, # left block 3D coords
+                                                            handview_camera_transformation_matrix,
+                                                            camera_height,
+                                                            camera_width)[::-1]
+                                                
+                front_block = project_points_from_world_to_camera(block_3d, # left block 3D coords
+                                                            frontview_camera_transformation_matrix,
+                                                            camera_height,
+                                                            camera_width)[::-1]
+                                            
 
 
             # visualization
-            # import ipdb
-            # ipdb.set_trace()
-            # curr_x, curr_y = subgoal_dic['robot0_eef_pos'][0][idx]
+
             if render:
                 env.render(mode="human", camera_name=camera_names[0])
             if video_writer is not None:
@@ -193,24 +264,44 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
                     video_img = []
                     for cam_name in camera_names:
                         frame = env.render(mode="rgb_array", height=512, width=512, camera_name=cam_name)
-                        frame = cv2.drawMarker(np.uint8(frame.copy()),
+                        if cam_name == 'agentview':
+                            frame = cv2.drawMarker(np.uint8(frame.copy()),
                                    (block[0],
                                     block[1]), color=(255, 0, 255),
                                    markerType=cv2.MARKER_CROSS, markerSize=10,
                                    thickness=2)
-                        if cam_name == 'agentview':
                             for point in agentview_subgoal_pixels:
                                 # print("HI")
                                 x, y = point
                                 # Draw a red circle with a radius of 5 pixels
-                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 2, (0, 0, 255), -1)
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                            frame = cv2.circle(np.uint8(frame.copy()), (fixed[0], fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
+                            frame = cv2.circle(np.uint8(frame.copy()), (eef_pos[0], eef_pos[1]), 2, (255, 0, 0), -1)  
                         elif cam_name == 'robot0_eye_in_hand':
+                            frame = cv2.drawMarker(np.uint8(frame.copy()),
+                                   (hand_block[0],
+                                    hand_block[1]), color=(255, 0, 255),
+                                   markerType=cv2.MARKER_CROSS, markerSize=10,
+                                   thickness=2)
                             for point in handview_subgoal_pixels:
                                 x, y = point
                                 # Draw a red circle with a radius of 5 pixels
                                 frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
-                        frame = cv2.circle(np.uint8(frame.copy()), (fixed[0], fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
-                        frame = cv2.circle(np.uint8(frame.copy()), (eef_pos[0], eef_pos[1]), 2, (255, 0, 0), -1)  
+                            frame = cv2.circle(np.uint8(frame.copy()), (hand_fixed[0], hand_fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
+                            frame = cv2.circle(np.uint8(frame.copy()), (hand_eef_pos[0], hand_eef_pos[1]), 2, (255, 0, 0), -1)  
+                        elif cam_name == 'frontview':
+                            frame = cv2.drawMarker(np.uint8(frame.copy()),
+                                   (front_block[0],
+                                    front_block[1]), color=(255, 0, 255),
+                                   markerType=cv2.MARKER_CROSS, markerSize=10,
+                                   thickness=2)
+                            for point in frontview_subgoal_pixels:
+                                x, y = point
+                                # Draw a red circle with a radius of 5 pixels
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                            frame = cv2.circle(np.uint8(frame.copy()), (front_fixed[0], front_fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
+                            frame = cv2.circle(np.uint8(frame.copy()), (front_eef_pos[0], front_eef_pos[1]), 2, (255, 0, 0), -1)  
+                        
                         frame = cv2.putText(np.uint8(frame.copy()), f"Timestep {step_i}", (20, 450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)                      
                         video_img.append(frame)
 

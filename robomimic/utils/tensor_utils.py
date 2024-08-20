@@ -20,6 +20,8 @@ def recursive_dict_list_tuple_apply(x, type_func_dict):
     Returns:
         y (dict or list or tuple): new nested dict-list-tuple
     """
+    # import ipdb
+    # ipdb.set_trace()
     assert(list not in type_func_dict)
     assert(tuple not in type_func_dict)
     assert(dict not in type_func_dict)
@@ -30,7 +32,9 @@ def recursive_dict_list_tuple_apply(x, type_func_dict):
             new_x[k] = recursive_dict_list_tuple_apply(v, type_func_dict)
         return new_x
     elif isinstance(x, (list, tuple)):
-        ret = [recursive_dict_list_tuple_apply(v, type_func_dict) for v in x]
+        for v in x:
+            print(v, type_func_dict)
+            ret = [recursive_dict_list_tuple_apply(v, type_func_dict)]
         if isinstance(x, tuple):
             ret = tuple(ret)
         return ret
@@ -39,6 +43,8 @@ def recursive_dict_list_tuple_apply(x, type_func_dict):
             if isinstance(x, t):
                 return f(x)
         else:
+            import ipdb
+            ipdb.set_trace()
             raise NotImplementedError(
                 'Cannot handle data type %s' % str(type(x)))
 
@@ -493,6 +499,8 @@ def reshape_dimensions_single(x, begin_axis, end_axis, target_dims):
     assert(begin_axis >= 0)
     assert(end_axis < len(x.shape))
     assert(isinstance(target_dims, (tuple, list)))
+    # import ipdb
+    # ipdb.set_trace()
     s = x.shape
     final_s = []
     for i in range(len(s)):

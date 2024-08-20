@@ -202,11 +202,11 @@ class HBC(HierarchicalAlgo):
             # train low-level actor by getting subgoals from the dataset
             info["actor"].update(self.actor.train_on_batch(batch["actor"], epoch, validate=validate))
 
-        elif self._algo_mode == "cascade":
+        elif self._algo_mode == "cascade": # NOTE(SHREYA): Change here if you want to make cascade work
             # get predictions from the planner
             with torch.no_grad():
                 batch["actor"]["goal_obs"] = self.planner.get_subgoal_predictions(
-                    obs_dict=batch["planner"]["obs"], goal_dict=batch["planner"]["goal_obs"])
+                    obs_dict=batch["planner"]["obs"], goal_dict=batch["planner"]["goal_obs"])[0] # TODO (SHREYA): FIX FOR EDITING THE gl.py get_subgoal_predictions function. go back and fix it!
 
             # train actor with the predicted goal
             info["actor"].update(self.actor.train_on_batch(batch["actor"], epoch, validate=validate))
@@ -309,7 +309,7 @@ class HBC(HierarchicalAlgo):
             assert list(v.shape[1:]) == list(self.actor_goal_shapes[k])
         self._current_subgoal = { k : sg[k].clone() for k in sg }  # SHREYA MAY HAVE TO change here
 
-    def get_action(self, obs_dict, goal_dict=None, fixed_goal_right=False, fixed_goal_left=False, transform = None): # SHREYA ADDED FIXED GOAL
+    def get_action(self, obs_dict, goal_dict=None, fixed_goal_right=False, fixed_goal_left=False, transform = None, step_no = 0): # SHREYA ADDED FIXED GOAL
         """
         Get policy action outputs.
 
@@ -325,7 +325,7 @@ class HBC(HierarchicalAlgo):
             # update current subgoal
             # import ipdb
             # ipdb.set_trace()
-            self.current_subgoal, subgoal_dic, idx = self.planner.get_subgoal_predictions(obs_dict=obs_dict, goal_dict=goal_dict, transform = transform)
+            self.current_subgoal, subgoal_dic, idx = self.planner.get_subgoal_predictions(obs_dict=obs_dict, goal_dict=goal_dict, transform = transform, step_no = step_no)
             # print(self.current_subgoal)
             # print(self.fixed_goal)
             subgoal_pos_get = True

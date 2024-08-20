@@ -678,6 +678,7 @@ class RNNActorNetwork(RNN_MIMO_MLP):
             actions (torch.Tensor): predicted action sequence
             rnn_state: return rnn state at the end if return_state is set to True
         """
+
         if self._is_goal_conditioned:
             assert goal_dict is not None
             # repeat the goal observation in time to match dimension with obs_dict

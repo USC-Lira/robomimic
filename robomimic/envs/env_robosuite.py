@@ -6,7 +6,8 @@ with metadata present in datasets.
 import json
 import numpy as np
 from copy import deepcopy
-
+import sys
+sys.path.append('/home/dhanush/shreya_gaze_project/robosuite_vd')
 import robosuite
 import robosuite.utils.transform_utils as T
 try:
@@ -96,6 +97,7 @@ class EnvRobosuite(EB.EnvBase):
             del kwargs["camera_depths"]
             kwargs["camera_depth"] = use_depth_obs # rename kwarg
 
+        
         self._env_name = env_name
         self._init_kwargs = deepcopy(kwargs)
         self.env = robosuite.make(self._env_name, **kwargs)

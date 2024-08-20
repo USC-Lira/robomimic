@@ -13,8 +13,9 @@ import imageio
 import numpy as np
 from copy import deepcopy
 from collections import OrderedDict
-
+import cv2
 import torch
+import sys
 
 import robomimic
 import robomimic.utils.tensor_utils as TensorUtils
@@ -25,6 +26,11 @@ from robomimic.utils.dataset import SequenceDataset
 from robomimic.envs.env_base import EnvBase
 from robomimic.envs.wrappers import EnvWrapper
 from robomimic.algo import RolloutPolicy
+
+sys.path.append("/home/dhanush/shreya_gaze_project/robosuite_vd") # SHREYA hack
+from robosuite.utils.camera_utils import project_points_from_world_to_camera, transform_from_pixels_to_world
+
+
 
 
 def get_exp_dir(config, auto_remove_exp_dir=False):
@@ -163,6 +169,8 @@ def dataset_factory(config, obs_keys, filter_by_attribute=None, dataset_path=Non
         hdf5_normalize_obs=config.train.hdf5_normalize_obs,
         filter_by_attribute=filter_by_attribute
     )
+    # import ipdb
+    # ipdb.set_trace()
     dataset = SequenceDataset(**ds_kwargs)
 
     return dataset
@@ -219,16 +227,67 @@ def run_rollout(
     total_reward = 0.
     success = { k: False for k in env.is_success() } # success metrics
 
+    # SHREYA setting camera height, width and transformation matrix
+    camera_height = 512
+    camera_width = 512
+    # import ipdb
+    # ipdb.set_trace()
+    agentview_camera_transformation_matrix = env.get_camera_transform_matrix("agentview", camera_height, camera_width)
+    handview_camera_transformation_matrix = env.get_camera_transform_matrix("robot0_eye_in_hand", camera_height, camera_width)
+    frontview_camera_transformation_matrix = env.get_camera_transform_matrix("frontview", camera_height, camera_width)
+
     try:
         for step_i in range(horizon):
 
             # import ipdb
             # ipdb.set_trace()
             # get action from policy
-            ac, _, _ = policy(ob=ob_dict, goal=goal_dict) # SHREYA this function returns (action, all the subgoal predictions, index of subgoal closest to the left block (by euclidean dist))
+            ac, subgoal_dic, idx = policy(ob=ob_dict, goal=goal_dict) # SHREYA this function returns (action, all the subgoal predictions, index of subgoal closest to the left block (by euclidean dist))
 
             # play action
             ob_dict, r, done, _ = env.step(ac)
+
+            if subgoal_dic is not None:
+                # (148, 261) for left block
+                subgoal_position = subgoal_dic['robot0_eef_pos'][0]
+                agentview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
+                                                                            agentview_camera_transformation_matrix,
+                                                                            camera_height,
+                                                                            camera_width)[:, ::-1] 
+                handview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
+                                                                             handview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[:, ::-1] 
+                frontview_subgoal_pixels = project_points_from_world_to_camera(subgoal_position.cpu().detach().numpy(),
+                                                                             frontview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[:, ::-1] 
+                fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
+                                                                             agentview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                hand_fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
+                                                                             handview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                front_fixed = project_points_from_world_to_camera(subgoal_dic['robot0_eef_pos'][0][idx].cpu().detach().numpy(),
+                                                                             frontview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                eef_pos = project_points_from_world_to_camera(ob_dict['robot0_eef_pos'],
+                                                                             agentview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                hand_eef_pos = project_points_from_world_to_camera(ob_dict['robot0_eef_pos'],
+                                                                             handview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+                front_eef_pos = project_points_from_world_to_camera(ob_dict['robot0_eef_pos'],
+                                                                             frontview_camera_transformation_matrix,
+                                                                             camera_height,
+                                                                             camera_width)[::-1]
+
+            # visualization
 
             # render to screen
             if render:
@@ -242,11 +301,44 @@ def run_rollout(
                 success[k] = success[k] or cur_success_metrics[k]
 
             # visualization
+            # if video_writer is not None:
+            #     if video_count % video_skip == 0:
+            #         video_img = env.render(mode="rgb_array", height=512, width=512)
+            #         video_writer.append_data(video_img)
+
             if video_writer is not None:
                 if video_count % video_skip == 0:
-                    video_img = env.render(mode="rgb_array", height=512, width=512)
-                    video_writer.append_data(video_img)
+                    video_img = []
+                    for cam_name in ['agentview', 'frontview']:
+                        frame = env.render(mode="rgb_array", height=512, width=512, camera_name=cam_name)
+                        if cam_name == 'agentview':
+                            for point in agentview_subgoal_pixels:
+                                # print("HI")
+                                x, y = point
+                                # Draw a red circle with a radius of 5 pixels
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                            frame = cv2.circle(np.uint8(frame.copy()), (fixed[0], fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
+                            frame = cv2.circle(np.uint8(frame.copy()), (eef_pos[0], eef_pos[1]), 2, (255, 0, 0), -1)  
+                        elif cam_name == 'robot0_eye_in_hand':
+                            for point in handview_subgoal_pixels:
+                                x, y = point
+                                # Draw a red circle with a radius of 5 pixels
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                            frame = cv2.circle(np.uint8(frame.copy()), (hand_fixed[0], hand_fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
+                            frame = cv2.circle(np.uint8(frame.copy()), (hand_eef_pos[0], hand_eef_pos[1]), 2, (255, 0, 0), -1)  
+                        elif cam_name == 'frontview':
+                            for point in frontview_subgoal_pixels:
+                                x, y = point
+                                # Draw a red circle with a radius of 5 pixels
+                                frame = cv2.circle(np.uint8(frame.copy()), (x, y), 5, (0, 0, 255), -1)
+                            frame = cv2.circle(np.uint8(frame.copy()), (front_fixed[0], front_fixed[1]), 2, (0, 255, 0), -1) # fixed goal (closest euclidean dist one)
+                            frame = cv2.circle(np.uint8(frame.copy()), (front_eef_pos[0], front_eef_pos[1]), 2, (255, 0, 0), -1)  
+                        
+                        frame = cv2.putText(np.uint8(frame.copy()), f"Timestep {step_i}", (20, 450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)                      
+                        video_img.append(frame)
 
+                    video_img = np.concatenate(video_img, axis=1) # concatenate horizontally
+                    video_writer.append_data(video_img)
                 video_count += 1
 
             # break if done
@@ -558,11 +650,14 @@ def run_epoch(model, data_loader, epoch, validate=False, num_steps=None, obs_nor
 
         # forward and backward pass
         t = time.time()
+        # import ipdb
+        # ipdb.set_trace()
         info = model.train_on_batch(input_batch, epoch, validate=validate)
         timing_stats["Train_Batch"].append(time.time() - t)
 
         # tensorboard logging
         t = time.time()
+        
         step_log = model.log_info(info)
         step_log_all.append(step_log)
         timing_stats["Log_Info"].append(time.time() - t)

@@ -1,0 +1,429 @@
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['robot0_gripper_qpos', 'robot0_eef_quat', 'robot0_eef_pos', 'object']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+
+============= Loaded Environment Metadata =============
+obs key object with shape (23,)
+obs key robot0_eef_pos with shape (3,)
+obs key robot0_eef_quat with shape (4,)
+obs key robot0_gripper_qpos with shape (2,)
+Created environment with name Lifteither
+Action size is 7
+Lifteither
+{
+    "camera_depths": false,
+    "controller_configs": {
+        "control_delta": true,
+        "damping_ratio": 1,
+        "damping_ratio_limits": [
+            0,
+            10
+        ],
+        "impedance_mode": "fixed",
+        "input_max": 1,
+        "input_min": -1,
+        "interpolation": null,
+        "kp": 700,
+        "kp_limits": [
+            0,
+            300
+        ],
+        "orientation_limits": null,
+        "output_max": [
+            0.05,
+            0.05,
+            0.05,
+            0.5,
+            0.5,
+            0.5
+        ],
+        "output_min": [
+            -0.05,
+            -0.05,
+            -0.05,
+            -0.5,
+            -0.5,
+            -0.5
+        ],
+        "position_limits": null,
+        "ramp_ratio": 0.2,
+        "type": "OSC_POSE",
+        "uncouple_pos_ori": true
+    },
+    "has_offscreen_renderer": true,
+    "has_renderer": false,
+    "ignore_done": true,
+    "render_gpu_device_id": 0,
+    "reward_shaping": false,
+    "robots": "Panda",
+    "use_camera_obs": false,
+    "use_object_obs": true
+}
+
+ObservationKeyToModalityDict: latent not found, adding latent to mapping with assumed low_dim modality!
+
+============= Model Summary =============
+ObservationKeyToModalityDict: mean not found, adding mean to mapping with assumed low_dim modality!
+ObservationKeyToModalityDict: logvar not found, adding logvar to mapping with assumed low_dim modality!
+ObservationKeyToModalityDict: action not found, adding action to mapping with assumed low_dim modality!
+HBC(subgoal_horizon=10, actor_horizon=10, subgoal_update_interval=10, mode=separate, actor_use_random_subgoals=False)
+Planner:
+  GL_VAE (
+    ModuleDict(
+      (goal_network): VAE(
+        (nets): ModuleDict(
+          (encoder): MIMO_MLP(
+              encoder=ObservationGroupEncoder(
+                  group=input
+                  ObservationEncoder(
+                      Key(
+                          name=object
+                          shape=[23]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_pos
+                          shape=[3]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_quat
+                          shape=[4]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_gripper_qpos
+                          shape=[2]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[32]
+                  )
+                  group=condition
+                  ObservationEncoder(
+                      Key(
+                          name=object
+                          shape=[23]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_pos
+                          shape=[3]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_quat
+                          shape=[4]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_gripper_qpos
+                          shape=[2]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[32]
+                  )
+              )
+      
+              mlp=MLP(
+                  input_dim=64
+                  output_dim=400
+                  layer_dims=[300]
+                  layer_func=Linear
+                  dropout=None
+                  act=ReLU
+                  output_act=ReLU
+              )
+      
+              decoder=ObservationDecoder(
+                  Key(
+                      name=mean
+                      shape=(16,)
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=16, bias=True))
+                  )
+                  Key(
+                      name=logvar
+                      shape=(16,)
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=16, bias=True))
+                  )
+              )
+          )
+          (decoder): MIMO_MLP(
+              encoder=ObservationGroupEncoder(
+                  group=input
+                  ObservationEncoder(
+                      Key(
+                          name=latent
+                          shape=(16,)
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[16]
+                  )
+                  group=condition
+                  ObservationEncoder(
+                      Key(
+                          name=object
+                          shape=[23]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_pos
+                          shape=[3]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_quat
+                          shape=[4]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_gripper_qpos
+                          shape=[2]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[32]
+                  )
+              )
+      
+              mlp=MLP(
+                  input_dim=48
+                  output_dim=400
+                  layer_dims=[300]
+                  layer_func=Linear
+                  dropout=None
+                  act=ReLU
+                  output_act=ReLU
+              )
+      
+              decoder=ObservationDecoder(
+                  Key(
+                      name=object
+                      shape=[23]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=23, bias=True))
+                  )
+                  Key(
+                      name=robot0_eef_pos
+                      shape=[3]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=3, bias=True))
+                  )
+                  Key(
+                      name=robot0_eef_quat
+                      shape=[4]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=4, bias=True))
+                  )
+                  Key(
+                      name=robot0_gripper_qpos
+                      shape=[2]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=2, bias=True))
+                  )
+              )
+          )
+          (prior): GaussianPrior(
+              latent_dim=16
+              latent_clip=None
+              learnable=True
+              input_dependent=False
+              use_gmm=True
+              gmm_num_nodes=2
+              gmm_learn_weights=True
+              prior_params=ParameterDict(
+                  (mean): Parameter containing: [torch.cuda.FloatTensor of size 1x2x16 (cuda:0)]
+                  (logvar): Parameter containing: [torch.cuda.FloatTensor of size 1x2x16 (cuda:0)]
+                  (weight): Parameter containing: [torch.cuda.FloatTensor of size 1x2 (cuda:0)]
+              )
+          )
+        )
+      )
+    )
+  )
+
+Policy:
+  BC_RNN (
+    ModuleDict(
+      (policy): RNNActorNetwork(
+          action_dim=7
+  
+          encoder=ObservationGroupEncoder(
+              group=obs
+              ObservationEncoder(
+                  Key(
+                      name=object
+                      shape=[23]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  Key(
+                      name=robot0_eef_pos
+                      shape=[3]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  Key(
+                      name=robot0_eef_quat
+                      shape=[4]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  Key(
+                      name=robot0_gripper_qpos
+                      shape=[2]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  output_shape=[32]
+              )
+          )
+  
+          rnn=RNN_Base(
+            (per_step_net): Sequential(
+              (0): MLP(
+                  input_dim=400
+                  output_dim=1024
+                  layer_dims=[1024]
+                  layer_func=Linear
+                  dropout=None
+                  act=ReLU
+                  output_act=ReLU
+              )
+              (1): ObservationDecoder(
+                  Key(
+                      name=action
+                      shape=(7,)
+                      modality=low_dim
+                      net=(Linear(in_features=1024, out_features=7, bias=True))
+                  )
+              )
+            )
+            (nets): LSTM(32, 400, num_layers=2, batch_first=True)
+          )
+      )
+    )
+  )
+
+SequenceDataset: loading dataset into memory...
+  0%|          | 0/128 [00:00<?, ?it/s]100%|##########| 128/128 [00:00<00:00, 1343.30it/s]
+SequenceDataset: caching get_item calls...
+  0%|          | 0/36746 [00:00<?, ?it/s]  7%|7         | 2692/36746 [00:00<00:01, 26917.33it/s] 15%|#4        | 5450/36746 [00:00<00:01, 27302.35it/s] 22%|##2       | 8232/36746 [00:00<00:01, 27535.11it/s] 30%|##9       | 10993/36746 [00:00<00:00, 27561.15it/s] 37%|###7      | 13750/36746 [00:00<00:00, 27341.78it/s] 45%|####4     | 16508/36746 [00:00<00:00, 27419.60it/s] 52%|#####2    | 19251/36746 [00:00<00:00, 21644.88it/s] 60%|#####9    | 22026/36746 [00:00<00:00, 23283.47it/s] 67%|######7   | 24701/36746 [00:00<00:00, 24244.21it/s] 75%|#######4  | 27483/36746 [00:01<00:00, 25256.92it/s] 82%|########2 | 30255/36746 [00:01<00:00, 25965.29it/s] 90%|########9 | 33029/36746 [00:01<00:00, 26480.59it/s] 97%|#########7| 35807/36746 [00:01<00:00, 26862.37it/s]100%|##########| 36746/36746 [00:01<00:00, 25888.13it/s]
+> [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py[0m(613)[0;36mget_dataset_sampler[0;34m()[0m
+[0;32m    612 [0;31m        [0mipdb[0m[0;34m.[0m[0mset_trace[0m[0;34m([0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m--> 613 [0;31m        [0;32mreturn[0m [0mCustomSampler[0m[0;34m([0m[0mstart_locations[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0m_demo_id_to_start_indices[0m[0;34m,[0m [0mtotal_length[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mtotal_num_sequences[0m[0;34m,[0m [0mindividual_length[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0m_demo_id_to_demo_length[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    614 [0;31m        [0;32mreturn[0m [0;32mNone[0m[0;34m[0m[0;34m[0m[0m
+[0m
+ipdb> > [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py[0m(641)[0;36mcalculate_probabilities[0;34m()[0m
+[0;32m    640 [0;31m            [0;31m# Gaussian-like distribution centered around start locations[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m--> 641 [0;31m            [0;32mfor[0m [0mkey[0m [0;32min[0m [0mself[0m[0;34m.[0m[0mstart_locations[0m[0;34m.[0m[0mkeys[0m[0;34m([0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    642 [0;31m                [0mstart_loc[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mstart_locations[0m[0;34m[[0m[0mkey[0m[0;34m][0m[0;34m[0m[0;34m[0m[0m
+[0m
+ipdb> > [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py[0m(653)[0;36mcalculate_probabilities[0;34m()[0m
+[0;32m    652 [0;31m            [0;31m# Normalize probabilities[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m--> 653 [0;31m            [0mprobabilities[0m [0;34m=[0m [0mprobabilities[0m [0;34m/[0m [0mprobabilities[0m[0;34m.[0m[0msum[0m[0;34m([0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    654 [0;31m[0;34m[0m[0m
+[0m
+ipdb> 
+============= Training Dataset =============
+SequenceDataset (
+	path=/home/dhanush/shreya_gaze_project/robosuite_vd/robosuite/models/assets/demonstrations/new_data_diverse_128_demos/low_dim.hdf5
+	obs_keys=('object', 'robot0_eef_pos', 'robot0_eef_quat', 'robot0_gripper_qpos')
+	seq_length=10
+	filter_key=none
+	frame_stack=1
+	pad_seq_length=True
+	pad_frame_stack=True
+	goal_mode=none
+	cache_mode=all
+	num_demos=128
+	num_sequences=36746
+)
+
+**************************************************
+Warnings generated by robomimic have been duplicated here (from above) for convenience. Please check them carefully.
+**************************************************
+
+  0%|          | 0/100 [00:00<?, ?it/s]> [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/train_utils.py[0m(565)[0;36mrun_epoch[0;34m()[0m
+[0;32m    564 [0;31m        [0mipdb[0m[0;34m.[0m[0mset_trace[0m[0;34m([0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m--> 565 [0;31m        [0minfo[0m [0;34m=[0m [0mmodel[0m[0;34m.[0m[0mtrain_on_batch[0m[0;34m([0m[0minput_batch[0m[0;34m,[0m [0mepoch[0m[0;34m,[0m [0mvalidate[0m[0;34m=[0m[0mvalidate[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    566 [0;31m        [0mtiming_stats[0m[0;34m[[0m[0;34m"Train_Batch"[0m[0;34m][0m[0;34m.[0m[0mappend[0m[0;34m([0m[0mtime[0m[0;34m.[0m[0mtime[0m[0;34m([0m[0;34m)[0m [0;34m-[0m [0mt[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m
+ipdb> --Call--
+> [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/algo/hbc.py[0m(179)[0;36mtrain_on_batch[0;34m()[0m
+[0;32m    178 [0;31m[0;34m[0m[0m
+[0m[0;32m--> 179 [0;31m    [0;32mdef[0m [0mtrain_on_batch[0m[0;34m([0m[0mself[0m[0;34m,[0m [0mbatch[0m[0;34m,[0m [0mepoch[0m[0;34m,[0m [0mvalidate[0m[0;34m=[0m[0;32mFalse[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    180 [0;31m        """
+[0m
+ipdb> > [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/algo/hbc.py[0m(196)[0;36mtrain_on_batch[0;34m()[0m
+[0;32m    195 [0;31m        """
+[0m[0;32m--> 196 [0;31m        [0minfo[0m [0;34m=[0m [0mdict[0m[0;34m([0m[0mplanner[0m[0;34m=[0m[0mdict[0m[0;34m([0m[0;34m)[0m[0;34m,[0m [0mactor[0m[0;34m=[0m[0mdict[0m[0;34m([0m[0;34m)[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    197 [0;31m        [0;31m# train planner[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[0m
+ipdb> > [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/algo/hbc.py[0m(198)[0;36mtrain_on_batch[0;34m()[0m
+[0;32m    197 [0;31m        [0;31m# train planner[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m--> 198 [0;31m        [0minfo[0m[0;34m[[0m[0;34m"planner"[0m[0;34m][0m[0;34m.[0m[0mupdate[0m[0;34m([0m[0mself[0m[0;34m.[0m[0mplanner[0m[0;34m.[0m[0mtrain_on_batch[0m[0;34m([0m[0mbatch[0m[0;34m[[0m[0;34m"planner"[0m[0;34m][0m[0;34m,[0m [0mepoch[0m[0;34m,[0m [0mvalidate[0m[0;34m=[0m[0mvalidate[0m[0;34m)[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    199 [0;31m[0;34m[0m[0m
+[0m
+ipdb> > [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/algo/hbc.py[0m(201)[0;36mtrain_on_batch[0;34m()[0m
+[0;32m    200 [0;31m        [0;31m# train actor[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m--> 201 [0;31m        [0;32mif[0m [0mself[0m[0;34m.[0m[0m_algo_mode[0m [0;34m==[0m [0;34m"separate"[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    202 [0;31m            [0;31m# train low-level actor by getting subgoals from the dataset[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[0m
+ipdb> > [0;32m/home/dhanush/shreya_gaze_project/robomimic/robomimic/algo/hbc.py[0m(203)[0;36mtrain_on_batch[0;34m()[0m
+[0;32m    202 [0;31m            [0;31m# train low-level actor by getting subgoals from the dataset[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m--> 203 [0;31m            [0minfo[0m[0;34m[[0m[0;34m"actor"[0m[0;34m][0m[0;34m.[0m[0mupdate[0m[0;34m([0m[0mself[0m[0;34m.[0m[0mactor[0m[0;34m.[0m[0mtrain_on_batch[0m[0;34m([0m[0mbatch[0m[0;34m[[0m[0;34m"actor"[0m[0;34m][0m[0;34m,[0m [0mepoch[0m[0;34m,[0m [0mvalidate[0m[0;34m=[0m[0mvalidate[0m[0;34m)[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m    204 [0;31m[0;34m[0m[0m
+[0m
+ipdb> 

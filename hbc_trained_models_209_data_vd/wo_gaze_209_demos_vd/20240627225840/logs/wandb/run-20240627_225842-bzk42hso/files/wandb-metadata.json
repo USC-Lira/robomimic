@@ -1,0 +1,157 @@
+{
+    "os": "Linux-5.15.0-107-generic-x86_64-with-glibc2.17",
+    "python": "3.8.18",
+    "heartbeatAt": "2024-06-28T05:58:43.320864",
+    "startedAt": "2024-06-28T05:58:42.839279",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--config",
+        "/home/dhanush/shreya_gaze_project/robomimic/robomimic/exps/templates/hbc_wandb.json",
+        "--dataset",
+        "/home/dhanush/shreya_gaze_project/robosuite_vd/robosuite/models/assets/demonstrations/wo_gaze_209_demos/low_dim.hdf5"
+    ],
+    "state": "running",
+    "program": "robomimic/scripts/train.py",
+    "codePathLocal": "robomimic/scripts/train.py",
+    "codePath": "robomimic/scripts/train.py",
+    "git": {
+        "remote": "https://github.com/USC-Lira/robomimic_vd.git",
+        "commit": "30a8b3adaf0f9d82a4b33a1e79a81c0b5395547a"
+    },
+    "email": "pdhanu2001@gmail.com",
+    "root": "/home/dhanush/shreya_gaze_project/robomimic_vd",
+    "host": "citrine",
+    "username": "dhanush",
+    "executable": "/home/dhanush/miniconda3/envs/robosuite_vd/bin/python",
+    "cpu_count": 12,
+    "cpu_count_logical": 20,
+    "cpu_freq": {
+        "current": 2344.8203999999996,
+        "min": 800.0,
+        "max": 4580.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 4519.662,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 4576.746,
+            "min": 800.0,
+            "max": 4900.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4900.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4900.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4900.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 4800.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 3600.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 3600.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 3600.0
+        },
+        {
+            "current": 2100.0,
+            "min": 800.0,
+            "max": 3600.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 1832.2072448730469,
+            "used": 1107.1729736328125
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "gpu_count": 2,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3090",
+            "memory_total": 25769803776
+        },
+        {
+            "name": "NVIDIA GeForce RTX 3090",
+            "memory_total": 25769803776
+        }
+    ],
+    "memory": {
+        "total": 62.57524490356445
+    }
+}

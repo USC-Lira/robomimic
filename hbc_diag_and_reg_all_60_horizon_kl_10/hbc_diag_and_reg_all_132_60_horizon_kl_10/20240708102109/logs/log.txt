@@ -1,0 +1,398 @@
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['robot0_gripper_qpos', 'robot0_eef_pos', 'robot0_eef_quat', 'object']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+
+============= Loaded Environment Metadata =============
+obs key object with shape (23,)
+obs key robot0_eef_pos with shape (3,)
+obs key robot0_eef_quat with shape (4,)
+obs key robot0_gripper_qpos with shape (2,)
+Created environment with name Lifteither
+Action size is 7
+Lifteither
+{
+    "camera_depths": false,
+    "controller_configs": {
+        "control_delta": true,
+        "damping_ratio": 1,
+        "damping_ratio_limits": [
+            0,
+            10
+        ],
+        "impedance_mode": "fixed",
+        "input_max": 1,
+        "input_min": -1,
+        "interpolation": null,
+        "kp": 700,
+        "kp_limits": [
+            0,
+            300
+        ],
+        "orientation_limits": null,
+        "output_max": [
+            0.05,
+            0.05,
+            0.05,
+            0.5,
+            0.5,
+            0.5
+        ],
+        "output_min": [
+            -0.05,
+            -0.05,
+            -0.05,
+            -0.5,
+            -0.5,
+            -0.5
+        ],
+        "position_limits": null,
+        "ramp_ratio": 0.2,
+        "type": "OSC_POSE",
+        "uncouple_pos_ori": true
+    },
+    "has_offscreen_renderer": true,
+    "has_renderer": false,
+    "ignore_done": true,
+    "render_gpu_device_id": 0,
+    "reward_shaping": false,
+    "robots": "Panda",
+    "use_camera_obs": false,
+    "use_object_obs": true
+}
+
+wandb: Currently logged in as: thegrey (p-gaze-for-robots). Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.17.4 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.2
+wandb: Run data is saved locally in /home/dhanush/shreya_gaze_project/robomimic/robomimic/../hbc_diag_and_reg_all_60_horizon_kl_10/hbc_diag_and_reg_all_132_60_horizon_kl_10/20240708102109/logs/wandb/run-20240708_102110-70lflxo9
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hbc_diag_and_reg_all_132_60_horizon_kl_10
+wandb:  View project at https://wandb.ai/p-gaze-for-robots/gaze_for_robots
+wandb:  View run at https://wandb.ai/p-gaze-for-robots/gaze_for_robots/runs/70lflxo9
+ObservationKeyToModalityDict: latent not found, adding latent to mapping with assumed low_dim modality!
+
+============= Model Summary =============
+ObservationKeyToModalityDict: mean not found, adding mean to mapping with assumed low_dim modality!
+ObservationKeyToModalityDict: logvar not found, adding logvar to mapping with assumed low_dim modality!
+ObservationKeyToModalityDict: action not found, adding action to mapping with assumed low_dim modality!
+HBC(subgoal_horizon=60, actor_horizon=10, subgoal_update_interval=30, mode=separate, actor_use_random_subgoals=False)
+Planner:
+  GL_VAE (
+    ModuleDict(
+      (goal_network): VAE(
+        (nets): ModuleDict(
+          (encoder): MIMO_MLP(
+              encoder=ObservationGroupEncoder(
+                  group=input
+                  ObservationEncoder(
+                      Key(
+                          name=object
+                          shape=[23]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_pos
+                          shape=[3]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_quat
+                          shape=[4]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_gripper_qpos
+                          shape=[2]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[32]
+                  )
+                  group=condition
+                  ObservationEncoder(
+                      Key(
+                          name=object
+                          shape=[23]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_pos
+                          shape=[3]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_quat
+                          shape=[4]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_gripper_qpos
+                          shape=[2]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[32]
+                  )
+              )
+      
+              mlp=MLP(
+                  input_dim=64
+                  output_dim=400
+                  layer_dims=[300]
+                  layer_func=Linear
+                  dropout=None
+                  act=ReLU
+                  output_act=ReLU
+              )
+      
+              decoder=ObservationDecoder(
+                  Key(
+                      name=mean
+                      shape=(16,)
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=16, bias=True))
+                  )
+                  Key(
+                      name=logvar
+                      shape=(16,)
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=16, bias=True))
+                  )
+              )
+          )
+          (decoder): MIMO_MLP(
+              encoder=ObservationGroupEncoder(
+                  group=input
+                  ObservationEncoder(
+                      Key(
+                          name=latent
+                          shape=(16,)
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[16]
+                  )
+                  group=condition
+                  ObservationEncoder(
+                      Key(
+                          name=object
+                          shape=[23]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_pos
+                          shape=[3]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_eef_quat
+                          shape=[4]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      Key(
+                          name=robot0_gripper_qpos
+                          shape=[2]
+                          modality=low_dim
+                          randomizer=None
+                          net=None
+                          sharing_from=None
+                      )
+                      output_shape=[32]
+                  )
+              )
+      
+              mlp=MLP(
+                  input_dim=48
+                  output_dim=400
+                  layer_dims=[300]
+                  layer_func=Linear
+                  dropout=None
+                  act=ReLU
+                  output_act=ReLU
+              )
+      
+              decoder=ObservationDecoder(
+                  Key(
+                      name=object
+                      shape=[23]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=23, bias=True))
+                  )
+                  Key(
+                      name=robot0_eef_pos
+                      shape=[3]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=3, bias=True))
+                  )
+                  Key(
+                      name=robot0_eef_quat
+                      shape=[4]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=4, bias=True))
+                  )
+                  Key(
+                      name=robot0_gripper_qpos
+                      shape=[2]
+                      modality=low_dim
+                      net=(Linear(in_features=400, out_features=2, bias=True))
+                  )
+              )
+          )
+          (prior): GaussianPrior(
+              latent_dim=16
+              latent_clip=None
+              learnable=False
+              input_dependent=False
+              use_gmm=False
+          )
+        )
+      )
+    )
+  )
+
+Policy:
+  BC_RNN (
+    ModuleDict(
+      (policy): RNNActorNetwork(
+          action_dim=7
+  
+          encoder=ObservationGroupEncoder(
+              group=obs
+              ObservationEncoder(
+                  Key(
+                      name=object
+                      shape=[23]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  Key(
+                      name=robot0_eef_pos
+                      shape=[3]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  Key(
+                      name=robot0_eef_quat
+                      shape=[4]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  Key(
+                      name=robot0_gripper_qpos
+                      shape=[2]
+                      modality=low_dim
+                      randomizer=None
+                      net=None
+                      sharing_from=None
+                  )
+                  output_shape=[32]
+              )
+          )
+  
+          rnn=RNN_Base(
+            (per_step_net): Sequential(
+              (0): MLP(
+                  input_dim=400
+                  output_dim=1024
+                  layer_dims=[1024]
+                  layer_func=Linear
+                  dropout=None
+                  act=ReLU
+                  output_act=ReLU
+              )
+              (1): ObservationDecoder(
+                  Key(
+                      name=action
+                      shape=(7,)
+                      modality=low_dim
+                      net=(Linear(in_features=1024, out_features=7, bias=True))
+                  )
+              )
+            )
+            (nets): LSTM(32, 400, num_layers=2, batch_first=True)
+          )
+      )
+    )
+  )
+
+SequenceDataset: loading dataset into memory...
+  0%|          | 0/581 [00:00<?, ?it/s] 24%|##4       | 141/581 [00:00<00:00, 1405.68it/s] 50%|#####     | 291/581 [00:00<00:00, 1459.49it/s] 76%|#######5  | 441/581 [00:00<00:00, 1474.83it/s]100%|##########| 581/581 [00:00<00:00, 1469.63it/s]
+SequenceDataset: caching get_item calls...
+  0%|          | 0/160956 [00:00<?, ?it/s]  1%|1         | 1775/160956 [00:00<00:08, 17748.24it/s]  2%|2         | 3550/160956 [00:00<00:08, 17501.87it/s]  3%|3         | 5301/160956 [00:00<00:08, 17352.78it/s]Traceback (most recent call last):
+  File "robomimic/scripts/train.py", line 431, in <module>
+    main(args)
+  File "robomimic/scripts/train.py", line 382, in main
+    train(config, device=device)
+  File "robomimic/scripts/train.py", line 138, in train
+    trainset, validset = TrainUtils.load_data_for_training(
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/train_utils.py", line 122, in load_data_for_training
+    train_dataset = dataset_factory(config, obs_keys, filter_by_attribute=train_filter_by_attribute)
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/train_utils.py", line 166, in dataset_factory
+    dataset = SequenceDataset(**ds_kwargs)
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py", line 146, in __init__
+    self.getitem_cache = [self.get_item(i) for i in LogUtils.custom_tqdm(range(len(self)))]
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py", line 146, in <listcomp>
+    self.getitem_cache = [self.get_item(i) for i in LogUtils.custom_tqdm(range(len(self)))]
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py", line 424, in get_item
+    meta = self.get_dataset_sequence_from_demo(
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py", line 557, in get_dataset_sequence_from_demo
+    data, pad_mask = self.get_sequence_from_demo(
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/dataset.py", line 511, in get_sequence_from_demo
+    pad_mask = pad_mask[:, None].astype(bool)
+KeyboardInterrupt
+Error in atexit._run_exitfuncs:
+Traceback (most recent call last):
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/wandb_manager.py", line 176, in _teardown
+    result = self._service.join()
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/service/service.py", line 250, in join
+    ret = self._internal_proc.wait()
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/subprocess.py", line 1083, in wait
+    return self._wait(timeout=timeout)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/subprocess.py", line 1822, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/subprocess.py", line 1780, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt

@@ -5,6 +5,7 @@ import numpy as np
 from collections import OrderedDict
 from copy import deepcopy
 
+import random
 import torch
 import torch.nn as nn
 
@@ -446,7 +447,7 @@ class GL_VAE(GL):
             loss_log["Encoder_Variance"] = info["encoder_variance"].mean().item()
         return loss_log
 
-    def get_subgoal_predictions(self, obs_dict, goal_dict=None, transform = None):
+    def get_subgoal_predictions(self, obs_dict, goal_dict=None, transform = None, step_no = 0):
         """
         Takes a batch of observations and predicts a batch of subgoals.
 
@@ -473,23 +474,99 @@ class GL_VAE(GL):
         # ipdb.set_trace()
         goals = self.sample_subgoals(obs_dict=obs_dict, goal_dict=goal_dict, num_samples=100) # NOTE: SHREYA change num_samples here to get different number of subgoal predictions. SUBGOAL NUMBER LINE
 
-        # SHREYA ------- convert goals to contain only the goal that is closest to the gaze -------
-        camera_height = 512
-        camera_width = 512
-        idx = 0
+        # # SHREYA ------- convert goals to contain only the goal that is closest to the gaze -------
+        # camera_height = 512
+        # camera_width = 512
+        # idx = 0
 
-        if transform is not None:
-                # (148, 261) for left block
-            agentview_subgoal_pixels = project_points_from_world_to_camera(goals['robot0_eef_pos'][0].cpu().detach().numpy(),
-                                                                        transform,
-                                                                        camera_height,
-                                                                        camera_width)[:,::-1]
+        # if transform is not None:
+        #         # (148, 261) for left block
+        #     # agentview_subgoal_pixels = project_points_from_world_to_camera(goals['robot0_eef_pos'][0].cpu().detach().numpy(),
+        #     #                                                             transform,
+        #     #                                                             camera_height,
+        #     #                                                             camera_width)[:,::-1]
             
-            distances = np.linalg.norm(agentview_subgoal_pixels - np.array([148, 261]), axis=1) # 148 for left block, 350 for right block
-            idx = np.argmin(distances)
+        #     # distances = np.linalg.norm(agentview_subgoal_pixels - np.array([148, 261]), axis=1) # 148 for left block, 350 for right block
+        #     # idx = np.argmin(distances)
 
-        # import ipdb
-        # ipdb.set_trace()
+        #     agentview_subgoal_pixels = goals['robot0_eef_pos'][0].cpu().detach().numpy()
+        #     block_3d = np.array([ 0, -0.10975602,  0.83172107]) # left block (self.sim.data.body_xpos[self.cube_body_id])
+        #     # block_3d = np.array([0, 0.1393668 , 0.83162073]) # right block (self.sim.data.body_xpos[self.cube2_body_id])
+        #     # block_3d = np.array([0, 0.13 , 0.83162073]) # right block (self.sim.data.body_xpos[self.cube2_body_id])
+
+        #     # # L shaped
+
+        #     # if step_no == 0:
+        #     #     sg = np.array([-0.0873, -0.0373,  1.0040])
+        #     # elif step_no == 30:
+        #     #     sg = np.array([-0.0660, -0.0850,  1.0008])
+        #     # elif step_no == 60:
+        #     #     sg = np.array([-0.0230, -0.1222,  1.0025])
+        #     # elif step_no == 90:
+        #     #     sg = np.array([-0.0026, -0.1203,  0.9948])
+        #     # elif step_no == 120:
+        #     #     sg = np.array([-0.0079, -0.1291,  0.9187])
+        #     # elif step_no == 150:
+        #     #     sg = np.array([-0.0044, -0.1299,  0.8358])
+        #     # elif step_no == 180:
+        #     #     sg = np.array([-0.0185, -0.1225,  0.8471])
+        #     # elif step_no == 210:
+        #     #     sg = np.array([-0.0282, -0.1120,  0.8508])
+
+        #     # V shaped
+
+        #     if step_no == 0:
+        #         sg = np.array([-0.0886, -0.0148,  0.9927])
+        #     elif step_no <= 30:
+        #         sg = np.array([-0.0544, -0.0502,  1.0019])
+        #     elif step_no <= 60:
+        #         sg = np.array([-0.0224, -0.1254,  1.0010])
+        #     elif step_no <= 90:
+        #         sg = np.array([-0.0078, -0.1244,  0.9347])
+        #     elif step_no <= 120:
+        #         sg = np.array([-0.0069, -0.1277,  0.8471])
+        #     elif step_no <= 150:
+        #         sg = np.array([-0.0123, -0.1321,  0.8344])
+        #     elif step_no <= 180:
+        #         sg = np.array([-0.0176, -0.1302,  0.8573])
+        #     elif step_no <= 210:
+        #         sg = np.array([-0.0195, -0.1208,  0.8553])
+
+        #     # print(step_no)
+
+        #     block_3d = np.array([ 0, -0.10975602,  0.83172107]) if step_no > 210 else sg
+
+        #     # For fixing left block as target (no moving target)
+        #     block_3d = np.array([ 0, -0.10975602,  0.83172107]) # left block
+
+        #     distances = np.linalg.norm(agentview_subgoal_pixels - block_3d, axis=1) # left block 3d coords
+        #     idx = np.argmin(distances)
+
+        #     # # Step 1: Enumerate the list to keep track of indices
+        #     # indexed_numbers = list(enumerate(distances))
+
+        #     # # Step 2: Sort the list of tuples by the second element (the number itself)
+        #     # sorted_numbers = sorted(indexed_numbers, key=lambda x: x[1])
+
+        #     # # Step 3: Get the indices of the 10 smallest numbers
+        #     # smallest_indices = [index for index, value in sorted_numbers[:10]]
+        #     # # random.shuffle(smallest_indices)
+
+        #     # idx = smallest_indices[0]
+
+        # For random subgoals
+        idx = 0
+        # print(vjhvhj)
+
+        # For zeroed out subgoals (debugging)
+        print("hi")
+        zero_dic = {}
+        new_goals = {}
+        for key in goals:
+            zero_dic[key] = torch.zeros(size = goals[key][:, idx, ...].shape)
+            new_goals[key] = torch.cat((goals[key], torch.zeros(size = goals[key].shape).to('cuda')), 1)
+        return zero_dic, new_goals, -1
+
         return { k : goals[k][:, idx, ...] for k in goals }, goals, idx
 
     def sample_subgoals(self, obs_dict, goal_dict=None, num_samples=1):

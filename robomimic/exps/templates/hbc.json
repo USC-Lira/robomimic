@@ -1,13 +1,13 @@
 {
     "algo_name": "hbc",
     "experiment": {
-        "name": "test",
+        "name": "test_biased_sampling_decay_1",
         "validate": false,
         "logging": {
             "terminal_output_to_txt": true,
             "log_tb": true,
             "log_wandb": false,
-            "wandb_proj_name": "debug"
+            "wandb_proj_name": "gaze_for_robots"
         },
         "save": {
             "enabled": true,
@@ -37,7 +37,7 @@
     },
     "train": {
         "data": null,
-        "output_dir": "../hbc_trained_models",
+        "output_dir": "../test_biased_sampling_decay_1",
         "num_data_workers": 0,
         "hdf5_cache_mode": "all",
         "hdf5_use_swmr": true,
@@ -101,11 +101,11 @@
                     "reconstruction_sum_across_elements": false
                 },
                 "prior": {
-                    "learn": false,
+                    "learn": true,
                     "is_conditioned": false,
-                    "use_gmm": false,
-                    "gmm_num_modes": 10,
-                    "gmm_learn_weights": false,
+                    "use_gmm": true,
+                    "gmm_num_modes": 2,
+                    "gmm_learn_weights": true,
                     "use_categorical": false,
                     "categorical_dim": 10,
                     "categorical_gumbel_softmax_hard": false,

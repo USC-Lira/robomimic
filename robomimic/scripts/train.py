@@ -43,7 +43,7 @@ from robomimic.algo import algo_factory, RolloutPolicy
 from robomimic.utils.log_utils import PrintLogger, DataLogger, flush_warnings
 
 
-def train(config, device):
+def train(config, device, planner_ckpt = None):
     """
     Train a model using the algorithm.
     """
@@ -126,6 +126,15 @@ def train(config, device):
         device=device,
     )
     
+    if planner_ckpt is not None: 
+        import ipdb
+        ipdb.set_trace()
+        ckpt_dict = None
+        ckpt_dict = FileUtils.maybe_dict_from_checkpoint(ckpt_path=planner_ckpt, ckpt_dict=ckpt_dict)
+        model.planner.deserialize(ckpt_dict["model"]["planner"])
+        print(f"Loaded planner checkpoint from {planner_ckpt}!")
+
+
     # save the config as a json file
     with open(os.path.join(log_dir, '..', 'config.json'), 'w') as outfile:
         json.dump(config, outfile, indent=4)
@@ -134,9 +143,12 @@ def train(config, device):
     print(model)  # print model summary
     print("")
 
+    # import ipdb
+    # ipdb.set_trace()
     # load training data
     trainset, validset = TrainUtils.load_data_for_training(
         config, obs_keys=shape_meta["all_obs_keys"])
+    # ipdb.set_trace()
     train_sampler = trainset.get_dataset_sampler()
     print("\n============= Training Dataset =============")
     print(trainset)
@@ -161,6 +173,10 @@ def train(config, device):
         drop_last=True
     )
 
+    # for indices in (train_loader): 
+    #     print(indices)
+
+    # print(ihdf)
     if config.experiment.validate:
         # cap num workers for validation dataset at 1
         num_workers = min(config.train.num_data_workers, 1)
@@ -194,6 +210,8 @@ def train(config, device):
     valid_num_steps = config.experiment.validation_epoch_every_n_steps
 
     for epoch in range(1, config.train.num_epochs + 1): # epoch numbers start at 1
+        # import ipdb
+        # ipdb.set_trace()
         step_log = TrainUtils.run_epoch(
             model=model,
             data_loader=train_loader,
@@ -379,7 +397,7 @@ def main(args):
     # catch error during training and print it
     res_str = "finished run successfully!"
     try:
-        train(config, device=device)
+        train(config, device=device, planner_ckpt = args.planner_ckpt)
     except Exception as e:
         res_str = "run failed with error:\n{}\n\n{}".format(e, traceback.format_exc())
     print(res_str)
@@ -425,6 +443,14 @@ if __name__ == "__main__":
         "--debug",
         action='store_true',
         help="set this flag to run a quick training run for debugging purposes"
+    )
+
+    # warm start mode
+    parser.add_argument(
+        "--planner_ckpt",
+        type=str,
+        default=None,
+        help="(optional) if provided, load planner from given ckpt and then start training",
     )
 
     args = parser.parse_args()

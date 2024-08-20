@@ -114,6 +114,8 @@ class SequenceDataset(torch.utils.data.Dataset):
         self.get_pad_mask = get_pad_mask
 
         self.load_demo_info(filter_by_attribute=self.filter_by_attribute)
+        # import ipdb
+        # ipdb.set_trace()
 
         # maybe prepare for observation normalization
         self.obs_normalization_stats = None
@@ -606,4 +608,48 @@ class SequenceDataset(torch.utils.data.Dataset):
         See the `train` function in scripts/train.py, and torch
         `DataLoader` documentation, for more info.
         """
+        # TODO (SHREYA): Change sampler accordingly
+        # return CustomSampler(start_locations = self._demo_id_to_start_indices, total_length = self.total_num_sequences, individual_length = self._demo_id_to_demo_length)
         return None
+
+
+class CustomSampler(torch.utils.data.Sampler):
+        def __init__(self, start_locations, total_length, individual_length, decay_std=200.0):
+            self.start_locations = start_locations
+            self.total_length = total_length
+            self.individual_length = individual_length
+            self.decay_std = decay_std
+            
+            # Calculate probabilities using Gaussian-like distribution centered around start locations
+            self.probabilities = self.calculate_probabilities()
+            
+        def __iter__(self):
+            # Sample indices based on calculated probabilities
+            return iter(torch.multinomial(self.probabilities, self.total_length, replacement=True))
+        
+        def __len__(self):
+            return self.total_length
+        
+        def calculate_probabilities(self):
+            # Initialize probabilities with zeros
+            probabilities = torch.zeros(self.total_length)
+            # import ipdb
+            # ipdb.set_trace()
+
+            # Gaussian-like distribution centered around start locations
+            for key in self.start_locations.keys():
+                start_loc = self.start_locations[key]
+                diverging_loc = start_loc + 30
+                end_loc = start_loc + self.individual_length[key]
+                # indices = torch.arange(start_loc, self.total_num_sequences)
+                indices = torch.arange(start_loc, end_loc)
+                gaussian_probs = torch.exp(-0.5 * (indices.float() - diverging_loc) ** 2 / self.decay_std ** 2)
+                probabilities[start_loc:end_loc] = gaussian_probs
+            
+            # import ipdb
+            # ipdb.set_trace()
+            # Normalize probabilities
+            probabilities = probabilities / probabilities.sum()
+            
+            
+            return probabilities

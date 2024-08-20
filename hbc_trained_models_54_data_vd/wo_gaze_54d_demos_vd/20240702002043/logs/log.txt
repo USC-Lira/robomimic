@@ -1,0 +1,107 @@
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['robot0_eef_quat', 'object', 'robot0_gripper_qpos', 'robot0_eef_pos']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+
+============= Loaded Environment Metadata =============
+obs key object with shape (23,)
+obs key robot0_eef_pos with shape (3,)
+obs key robot0_eef_quat with shape (4,)
+obs key robot0_gripper_qpos with shape (2,)
+Created environment with name Lifteither
+Action size is 7
+Lifteither
+{
+    "camera_depths": false,
+    "controller_configs": {
+        "control_delta": true,
+        "damping_ratio": 1,
+        "damping_ratio_limits": [
+            0,
+            10
+        ],
+        "impedance_mode": "fixed",
+        "input_max": 1,
+        "input_min": -1,
+        "interpolation": null,
+        "kp": 700,
+        "kp_limits": [
+            0,
+            300
+        ],
+        "orientation_limits": null,
+        "output_max": [
+            0.05,
+            0.05,
+            0.05,
+            0.5,
+            0.5,
+            0.5
+        ],
+        "output_min": [
+            -0.05,
+            -0.05,
+            -0.05,
+            -0.5,
+            -0.5,
+            -0.5
+        ],
+        "position_limits": null,
+        "ramp_ratio": 0.2,
+        "type": "OSC_POSE",
+        "uncouple_pos_ori": true
+    },
+    "has_offscreen_renderer": true,
+    "has_renderer": false,
+    "ignore_done": true,
+    "render_gpu_device_id": 0,
+    "reward_shaping": false,
+    "robots": "Panda",
+    "use_camera_obs": false,
+    "use_object_obs": true
+}
+
+wandb: Currently logged in as: thegrey (p-gaze-for-robots). Use `wandb login --relogin` to force relogin
+Problem at: /home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/log_utils.py 77 __init__
+Traceback (most recent call last):
+  File "robomimic/scripts/train.py", line 431, in <module>
+    main(args)
+  File "robomimic/scripts/train.py", line 382, in main
+    train(config, device=device)
+  File "robomimic/scripts/train.py", line 115, in train
+    data_logger = DataLogger(
+  File "/home/dhanush/shreya_gaze_project/robomimic/robomimic/utils/log_utils.py", line 77, in __init__
+    self._wandb_logger.init(
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/wandb_init.py", line 1199, in init
+    raise e
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/wandb_init.py", line 1176, in init
+    run = wi.init()
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/wandb_init.py", line 817, in init
+    run_start_result = run_start_handle.wait(timeout=30)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/lib/mailbox.py", line 283, in wait
+    found, abandoned = self._slot._get_and_clear(timeout=wait_timeout)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/lib/mailbox.py", line 130, in _get_and_clear
+    if self._wait(timeout=timeout):
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/lib/mailbox.py", line 126, in _wait
+    return self._event.wait(timeout=timeout)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/threading.py", line 558, in wait
+    signaled = self._cond.wait(timeout)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/threading.py", line 306, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt
+Error in atexit._run_exitfuncs:
+Traceback (most recent call last):
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/wandb_manager.py", line 176, in _teardown
+    result = self._service.join()
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/site-packages/wandb/sdk/service/service.py", line 250, in join
+    ret = self._internal_proc.wait()
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/subprocess.py", line 1083, in wait
+    return self._wait(timeout=timeout)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/subprocess.py", line 1822, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/dhanush/miniconda3/envs/robosuite_vd/lib/python3.8/subprocess.py", line 1780, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt

@@ -510,7 +510,7 @@ class RolloutPolicy(object):
         """Pretty print network description"""
         return self.policy.__repr__()
 
-    def __call__(self, ob, goal=None, fixed_goal_right = False, fixed_goal_left=False, transform = None): # SHREYA ADDED FIXED GOAL
+    def __call__(self, ob, goal=None, fixed_goal_right = False, fixed_goal_left=False, transform = None, step_no = 0): # SHREYA ADDED FIXED GOAL
         """
         Produce action from raw observation dict (and maybe goal dict) from environment.
 
@@ -522,7 +522,7 @@ class RolloutPolicy(object):
         ob = self._prepare_observation(ob)
         if goal is not None:
             goal = self._prepare_observation(goal)
-        ac = self.policy.get_action(obs_dict=ob, goal_dict=goal, fixed_goal_right = fixed_goal_right, fixed_goal_left=fixed_goal_left, transform = transform) # SHREYA ADDED FIXED GOAL
+        ac = self.policy.get_action(obs_dict=ob, goal_dict=goal, fixed_goal_right = fixed_goal_right, fixed_goal_left=fixed_goal_left, transform = transform, step_no = step_no) # SHREYA ADDED FIXED GOAL
         if isinstance(ac, tuple): # SHREYA added for returning both the action as well as all predicted subgoals
             return TensorUtils.to_numpy(ac[0][0]), ac[1], ac[2]
         else:
